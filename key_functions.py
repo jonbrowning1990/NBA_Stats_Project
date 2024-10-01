@@ -3,7 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import mysql.connector as connector
-import views2
 import requests
 import re
 import box_update 
