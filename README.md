@@ -9,10 +9,10 @@ I realized this could be scaled up to scrape data for the entire league includin
 First, I considered all the information that I would want to store and potentially analyze, and I created a schema with linked tables for players, teams, games, and game statistics. 
 I worked on code that would progress through an entire season, locating the necessary URLs to query for each game played, and scrape the html for the box score data. 
 I also created functions to pull player data i.e. height, weight, etc., and information on individual games such as date, time, and attendence.
-This data was then loaded into the database with functions using a python mySQL connection and insert/update queries compiled string functions.
-Finally I made an execution script that would run and call the necessary functions to create the entire database for a chosen year.
+This data was then loaded into the database with functions using a python mySQL connection and insert/update queries compiled with string functions.
 I debugged the code so that it could be used to compile a database from any of the NBA seasons from the last 30 years.
-I next constructed a script with python functions that compile and execute complex SQL queries with features to pull data, filter on statistics, player or game attributes, sum or average player statistics, and track players or trends over multiple years.
+Finally, I made an execution script that would run and call the necessary functions to create the entire database for a chosen year.
+After completing the database creation code, I next constructed a script with python functions that compile and execute complex SQL queries on the databases with features to pull data, filter on statistics, player or game attributes, sum or average player statistics, and track players or trends over multiple years.
 
 ## Skills Used
 Python, MySQL, Extract/Transform/Load processes, Web Scraping, HTML Parsing, Regex Functions, Schema Creation, Database Clients, SQL Querys (Including Create, Update, Alter, Select, Join, Group By, etc.)
