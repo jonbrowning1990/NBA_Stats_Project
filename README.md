@@ -2,7 +2,7 @@
 This repository contains the code I created to scrape, transform, and aggregate NBA Box Score statistics and upload them to into SQL databases.
 
 ## Project Conception
-As a basketball fan I grew up watching the Washinigton Wizards and have fond memories of the 2003-04 Washington Wizards season especially. I thought it good practice to gather the data from that season and compile my own table with the stats from all of that year's games. I created some code to scrape the box score data for every game, clean it of missing data or unwanted columns, and format it for statistical analysis.
+As a basketball fan I grew up watching the Washington Wizards and have fond memories of the 2003-04 Washington Wizards season especially. I thought it good practice to gather the data from that season and compile my own table with the stats from all of that year's games. I created some code to scrape the box score data for every game, clean it of missing data or unwanted columns, and format it for statistical analysis.
 I realized this could be scaled up to scrape data for the entire league including information on all the teams, players, games, and individuals' statistics for each game played. I decided to create code to build a MySQL database to store all this data and a simple execute script that could be run to build an entire season's database.
 
 ## Process
