@@ -66,8 +66,12 @@ def splits(type_stats = 'per_game', teams = None, players = None, positions = No
     if Home == 'Away':
         home_away_clause = "Home_Away = 'Away'"
     by_team_clause = ''
+    team_name_clause = ''
+    team_join_clause = ''
     if by_team == 'yes':
         by_team_clause = ', TeamID'
+        team_name_clause = ', teams.Name AS Team'
+        team_join_clause = ' LEFT JOIN teams ON stats.TeamID = teams.TeamID'
     by_win_loss_clause = ''
     if win_loss == 'yes':
         by_win_loss_clause = ', Win_Loss'
@@ -100,32 +104,41 @@ def splits(type_stats = 'per_game', teams = None, players = None, positions = No
         where_clauses = 'WHERE '+ ' AND '.join(present_clauses)
 
     if type_stats == 'per_game':
-        full_query = ("SELECT DISTINCT stats.*" + f"{include_clauses[0]}" + " FROM (SELECT Player" + f"{by_team_clause}{by_win_loss_clause}," + " COUNT(Player) AS GP, SUM(Starter) AS GS, ROUND(SUM(MP)/COUNT(Player), 1) AS MP,"
+        full_query = ("SELECT DISTINCT stats.*" + f"{include_clauses[0]}" + f"{team_name_clause}" + " FROM (SELECT Player" + f"{by_team_clause}{by_win_loss_clause}," + " COUNT(Player) AS GP, SUM(Starter) AS GS, ROUND(SUM(MP)/COUNT(Player), 1) AS MP,"
                     " ROUND(SUM(FG)/COUNT(Player), 1) AS FG, ROUND(SUM(FGA)/COUNT(Player), 1) AS FGA, ROUND(SUM(3FG)/COUNT(Player), 1) AS 3FG," 
                     " ROUND(SUM(3FGA)/COUNT(Player), 1) AS 3FGA, ROUND(SUM(FT)/COUNT(Player), 1) AS FT, ROUND(SUM(FTA)/COUNT(Player), 1) AS FTA,"
                     " ROUND(SUM(ORB)/COUNT(Player), 1) AS ORB, ROUND(SUM(DRB)/COUNT(Player), 1) AS DRB, ROUND(SUM(TRB)/COUNT(Player), 1) AS TRB,"
                     " ROUND(SUM(AST)/COUNT(Player), 1) AS AST, ROUND(SUM(STL)/COUNT(Player), 1) AS STL, ROUND(SUM(BLK)/COUNT(Player), 1) AS BLK,"
                     " ROUND(SUM(TOV)/COUNT(Player), 1) AS TOV, ROUND(SUM(PF)/COUNT(Player), 1) AS PF, ROUND(SUM(PTS)/COUNT(Player), 1) AS PTS,"
                     " ROUND(SUM(Plus_Minus)/COUNT(Player), 1) AS Plus_Minus FROM gamestats "
-                    f"{where_clauses}" + "GROUP BY Player" + f"{by_team_clause}" + f"{by_win_loss_clause}) AS stats" + include_clauses[1])
+                    f"{where_clauses}" + "GROUP BY Player" + f"{by_team_clause}" + f"{by_win_loss_clause}) AS stats" + include_clauses[1] + team_join_clause)
 
     if type_stats == 'totals':
-        full_query= ("SELECT DISTINCT stats.*" + f"{include_clauses[0]}" + " FROM (SELECT Player" + f"{by_team_clause}{by_win_loss_clause}," + " COUNT(Player) AS GP, SUM(Starter) AS GS, SUM(MP) AS MP, SUM(FG) AS FG, SUM(FGA) AS FGA,"
+        full_query= ("SELECT DISTINCT stats.*" + f"{include_clauses[0]}" + f"{team_name_clause}" + " FROM (SELECT Player" + f"{by_team_clause}{by_win_loss_clause}," + " COUNT(Player) AS GP, SUM(Starter) AS GS, SUM(MP) AS MP, SUM(FG) AS FG, SUM(FGA) AS FGA,"
                     " SUM(3FG) AS 3FG, SUM(3FGA) AS 3FGA, SUM(FT) AS FT, SUM(FTA) AS FTA, SUM(ORB) AS ORB, SUM(DRB) AS DRB,"
                     " SUM(TRB) AS TRB, SUM(AST) AS AST, SUM(STL) AS STL, SUM(BLK) AS BLK, SUM(TOV) AS TOV, SUM(PF) AS PF, "
                     " SUM(PTS) AS PTS, SUM(Plus_Minus) AS Plus_Minus FROM gamestats "
-                    f"{where_clauses}" + " GROUP BY Player" + f"{by_team_clause}" + f"{by_win_loss_clause}) AS stats" + include_clauses[1])
+                    f"{where_clauses}" + " GROUP BY Player" + f"{by_team_clause}" + f"{by_win_loss_clause}) AS stats" + include_clauses[1] + team_join_clause)
         
     if type_stats == 'all_games':
-        full_query= ("SELECT DISTINCT stats.*" + f"{include_clauses[0]}" + ", games.Date" + " FROM (SELECT TeamID, GameID, Player, Starter AS Start, MP, FG, FGA, 3FG, 3FGA, FT, FTA, ORB, DRB, TRB, AST, STL, BLK, TOV, PF, PTS, Plus_Minus" + f"{by_win_loss_clause}" + " FROM gamestats "
-                    f"{where_clauses}) AS stats" + include_clauses[1] + " LEFT JOIN games ON stats.GameID = games.gameID")
+        full_query= ("SELECT DISTINCT stats.*" + f"{include_clauses[0]}" + ", games.Date, games.Time" + f"{team_name_clause}" + " FROM (SELECT TeamID, GameID, Player, Starter AS Start, MP, FG, FGA, 3FG, 3FGA, FT, FTA, ORB, DRB, TRB, AST, STL, BLK, TOV, PF, PTS, Plus_Minus" + f"{by_win_loss_clause}" + " FROM gamestats "
+                    f"{where_clauses}) AS stats" + include_clauses[1] + " LEFT JOIN games ON stats.GameID = games.gameID" + 
+                    team_join_clause)
+        
+    if type_stats == 'team_stats':
+        full_query = ("SELECT DISTINCT stats.*, teams.Name AS Team FROM (SELECT TeamID " + f"{by_win_loss_clause}," + "SUM(MP) AS MP,"
+                    " SUM(FG) AS FG, SUM(FGA) AS FGA, SUM(3FG) AS 3FG," 
+                    " SUM(3FGA) AS 3FGA, SUM(FT) AS FT, SUM(FTA) AS FTA,"
+                    " SUM(ORB) AS ORB, SUM(DRB) AS DRB, SUM(TRB) AS TRB,"
+                    " SUM(AST) AS AST, SUM(STL) AS STL, SUM(BLK) AS BLK,"
+                    " SUM(TOV) AS TOV, SUM(PF) AS PF, SUM(PTS) AS PTS"
+                    " FROM gamestats "
+                    f"{where_clauses}" + "GROUP BY GameID, TeamID" + f"{by_win_loss_clause}) AS stats LEFT JOIN teams ON stats.TeamID = teams.TeamID")
+    
     return full_query
 
-splits(max_age = 30, min_age=30)
 
-
-def stat_sorter(MP = '>0', FG= None , FGA= None, FG3= None, FGA3 = None, FT= None, FTA= None, ORB= None, DRB= None, TRB= None, AST= None, STL= None, BLK= None,
-                   TOV = None, PF = None, PTS = None, W_L = None, Plus_Minus = None ,**kwargs):
+def stat_sorter(MP = '>0', GP = None, FG= None , FGA= None, FG3= None, FGA3 = None, FT= None, FTA= None, ORB= None, DRB= None, TRB= None, AST= None, STL= None, BLK= None, TOV = None, PF = None, PTS = None, W_L = None, Plus_Minus = None ,**kwargs):
     local_items = locals().items()
     where_clauses = [(x[0] + ' ' + str(x[1])) for x in local_items if x[0] != 'kwargs' and x[1] != None]
     where_clauses = ' AND '.join(where_clauses).replace('FG3','3FG').replace('FGA3','3FGA')
@@ -151,26 +164,43 @@ def multiple_year_query(seasons_start, seasons_end = None, **kwargs):
 
     season_start - string - ex.('2010') Beginning of time span of stats search, corresponding to year that season begins
     season_end - string - ex.('2010') End of time span for stats search, corresponding to year that season ends. If left blank, only season of season_start will be included
+    
     type_stats - 'per_game', 'all_games', 'totals' - whether you would like to return per_game averages, all game box scores, or summed total stats. Default is 'per_game'
+    
     teams - string or list of strings of full team names ex.('Golden State Warriors'). Default is all teams
+    
     players - string or list of strings of full player names ex.('Lebron James'). Default is all players
+    
     positions - string or list of strings of positions, options are 'PG', 'SG', 'SF', 'PF', 'C'
+    
     opponents - string or list of strings of full team names for stats against given opponent
+    
     min_weight - int or string for minimum weight for player searched
+    
     max_weight - int or string for maximum weight for player searched
+    
     min_age - int or string for minimum age for player searched
+    
     max_age - int or string for maximum age for player searched
+    
     min_height - int or string for minimum height for player searched
-    max_height - int or string for maximum height for player searched None,
+    
+    max_height - int or string for maximum height for player searched None
+    
     start_date - date string ex('2012-12-12') for start of search frame
+    
     end_date - date string for end of search frame
+    
     Home - 'Home' for home games, 'Away' for away, default is None for both
+    
     win_loss - 'yes' seperates averages by win_loss, and 'yes' with include includes win_loss column in final datagrame
+    
     by_team - 'yes' to include different teams for players who have been traded within season
+    
     include - 'yes' to include height, weight, age, or position in final dataframe. Default is 'no'
-    MP = '>0', FG= None , FGA= None, FG3= None, FGA3 = None, FT= None, FTA= None, ORB= None, DRB= None, TRB= None, AST= None, STL= None, BLK= None,
-                   TOV = None, PF = None, PTS = None, W_L = None, Plus_Minus = None 
-    Boolean strings to search by minimum or maximum stats for example '>20' in PTS for more than 20 points.
+    
+    MP = '>0', FG= None , FGA= None, FG3= None, FGA3 = None, FT= None, FTA= None, ORB= None, DRB= None, TRB= None, AST= None, STL= None, BLK= None, TOV = None, PF = None, PTS = None, W_L = None, Plus_Minus = None 
+    Comparison strings to search by minimum or maximum stats for example '>20' in PTS for more than 20 points. Can also input 'BETWEEN x and y'.
     """
     seasons_list = []
     if seasons_end == None:
@@ -186,5 +216,10 @@ def multiple_year_query(seasons_start, seasons_end = None, **kwargs):
         season_df = pd.read_sql(stat_sorter(**kwargs), connection)
         season_df['Season'] = use_year[-7:]
         df = pd.concat([df, season_df])
+    if 'type_stats' in locals()['kwargs']:
+        if locals()['kwargs']['type_stats'] in ['totals', 'team_stats']:
+            for x in ['FG', 'FGA', '3FG', '3FGA', 'FT', 'FTA',
+               'ORB', 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF', 'PTS']:
+                df[x] = df[x].astype(int)
     connection.close()
     return df
